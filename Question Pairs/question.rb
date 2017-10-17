@@ -8,7 +8,7 @@ class Question
   attr_reader :id
   attr_accessor :title, :body, :author_id
 
-  def initialize(options)
+  def initialize(options={})
     @id = options['id']
     @title = options['title']
     @body = options['body']
@@ -73,6 +73,29 @@ class Question
 
   def self.most_liked(n)
     QuestionLike.most_liked_questions(n)
+  end
+
+  def save
+    if @id.nil?
+      QuestionsDatabase.instance.execute(<<-SQL, @title, @body, @author_id)
+      INSERT INTO
+        questions (title, body, author_id)
+      VALUES
+        (?, ?, ?)
+      SQL
+      "OK"
+    else
+      print "Updating..."
+      QuestionsDatabase.instance.execute(<<-SQL, @title, @body, @author_id, @id)
+      UPDATE
+        questions
+      SET
+        title = ?, body = ?, author_id = ?
+      WHERE
+        id = ?
+      SQL
+      "OK"
+    end
   end
 
 end

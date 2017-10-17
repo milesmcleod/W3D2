@@ -7,7 +7,7 @@ require_relative 'questionfollow.rb'
 class User
   attr_reader :id
   attr_accessor :fname, :lname
-  def initialize(options)
+  def initialize(options={})
     @id = options['id']
     @fname = options['fname']
     @lname = options['lname']
@@ -72,4 +72,30 @@ class User
     SQL
     data.first.values.first
   end
+  # a = Users.new
+  # a.fname = "Hello"
+  # a.lname = "World"
+  # a.save
+  def save
+    if @id.nil?
+      QuestionsDatabase.instance.execute(<<-SQL, @fname, @lname)
+      INSERT INTO
+        users (fname, lname)
+      VALUES
+        (?, ?)
+      SQL
+      "OK"
+    else
+      print "Updating..."
+      QuestionsDatabase.instance.execute(<<-SQL, @fname, @lname, @id)
+      UPDATE
+        users
+      SET
+        fname = ?, lname = ?
+      WHERE id = ?
+      SQL
+      "OK"
+    end
+  end
+
 end

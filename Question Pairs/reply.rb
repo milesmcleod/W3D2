@@ -7,7 +7,7 @@ require_relative 'questionfollow.rb'
 class Reply
   attr_reader :id
   attr_accessor :subject_question_id, :parent_reply_id, :user_id, :body
-  def initialize(options)
+  def initialize(options={})
     @id = options['id']
     @subject_question_id = options['subject_question_id']
     @parent_reply_id = options['parent_reply_id']
@@ -83,5 +83,27 @@ class Reply
     SQL
     raise "No reply children" if data.empty?
     data.map { |datum| Reply.new(datum) }
+  end
+
+  def save
+    if @id.nil?
+      QuestionsDatabase.instance.execute(<<-SQL, @subject_question_id, @parent_reply_id, @user_id, @body)
+      INSERT INTO
+        replies (subject_question_id, parent_reply_id, user_id, body)
+      VALUES
+        (?, ?, ?, ?)
+      SQL
+      "OK"
+    else
+      print "Updating..."
+      QuestionsDatabase.instance.execute(<<-SQL, @subject_question_id, @parent_reply_id, @user_id, @body, @id)
+      UPDATE
+        replies
+      SET
+        subject_question_id = ?, parent_reply_id = ?,  user_id = ?, body = ?
+      WHERE id = ?
+      SQL
+      "OK"
+    end
   end
 end
