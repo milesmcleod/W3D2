@@ -73,7 +73,10 @@ VALUES
 INSERT INTO
   question_likes (user_id, question_id)
 VALUES
-  (2, 1);
+  (1, 1),
+  (1, 2),
+  (1, 3),
+  (3, 1);
 
 INSERT INTO
   question_follows (user_id, question_id)
