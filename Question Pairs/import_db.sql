@@ -53,18 +53,20 @@ INSERT INTO
   users (fname, lname)
 VALUES
   ('Henry', 'Chen'),
-  ('Miles', 'McLeod');
+  ('Miles', 'McLeod'),
+  ('Taylor', 'Swift');
 
 INSERT INTO
   questions (title, body, author_id)
 VALUES
   ('Color', 'What''s your favorite color?', (SELECT id FROM users WHERE fname = 'Henry')),
-  ('Favorite Band', 'What''s your favorite band?', (SELECT id FROM users WHERE fname = 'Miles'));
-
+  ('Favorite Band', 'What''s your favorite band?', (SELECT id FROM users WHERE fname = 'Miles')),
+  ('Ice Cream', 'What''s your favorite ice cream?', (SELECT id FROM users WHERE fname = 'Miles'));
 INSERT INTO
   replies (subject_question_id, parent_reply_id, user_id, body)
 VALUES
   (1, NULL, 2, 'Blue'),
+  (3, NULL, 1, 'Strawberry'),
   (1, 1, 2, 'Green');
 
 
@@ -76,4 +78,7 @@ VALUES
 INSERT INTO
   question_follows (user_id, question_id)
 VALUES
-  (2, 1);
+  (2, 1),
+  (2, 2),
+  (1, 1),
+  (3, 1);
