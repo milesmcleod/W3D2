@@ -32,12 +32,12 @@ CREATE TABLE replies (
   id INTEGER PRIMARY KEY,
   subject_question_id INTEGER NOT NULL,
   parent_reply_id INTEGER,
-  author_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
   body TEXT NOT NULL,
 
   FOREIGN KEY (subject_question_id) REFERENCES questions(id),
   FOREIGN KEY (parent_reply_id) REFERENCES replies(id),
-  FOREIGN KEY (author_id) REFERENCES users(id)
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE question_likes (
@@ -60,3 +60,20 @@ INSERT INTO
 VALUES
   ('Color', 'What''s your favorite color?', (SELECT id FROM users WHERE fname = 'Henry')),
   ('Favorite Band', 'What''s your favorite band?', (SELECT id FROM users WHERE fname = 'Miles'));
+
+INSERT INTO
+  replies (subject_question_id, parent_reply_id, user_id, body)
+VALUES
+  (1, NULL, 2, 'Blue'),
+  (1, 1, 2, 'Green');
+
+
+INSERT INTO
+  question_likes (user_id, question_id)
+VALUES
+  (2, 1);
+
+INSERT INTO
+  question_follows (user_id, question_id)
+VALUES
+  (2, 1);

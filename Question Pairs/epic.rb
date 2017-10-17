@@ -33,7 +33,7 @@ class User
       WHERE
         id = ?
     SQL
-    data.map { |datum| User.new(datum) }
+    User.new(data.first)
   end
 
   def self.find_by_name(fname, lname)
@@ -45,8 +45,18 @@ class User
       WHERE
         fname LIKE ? AND lname LIKE ?
     SQL
-    data.map { |datum| User.new(datum) }
+    User.new(data.first)
   end
+
+  def authored_questions
+    Question.find_by_author_id(@id)
+  end
+
+  def authored_replies
+    Reply.find_by_user_id(@id)
+  end
+
+
 end
 
 class Question
@@ -69,18 +79,47 @@ class Question
       WHERE
         id = ?
     SQL
+    Question.new(data.first)
+  end
+
+  def self.find_by_author_id(id)
+    data = QuestionsDatabase.instance.execute(<<-SQL, id)
+      SELECT
+        *
+      FROM
+        questions
+      WHERE
+        author_id = ?
+    SQL
     data.map { |datum| Question.new(datum) }
   end
+
+  def author
+    data = QuestionsDatabase.instance.execute(<<-SQL, @author_id)
+      SELECT
+        fname, lname
+      FROM
+        users
+      WHERE
+        id = ?
+    SQL
+    User.new(data.first)
+  end
+
+  def replies
+    Reply.find_by_question_id(@id)
+  end
+
 end
 
 class Reply
   attr_reader :id
-  attr_accessor :subject_question_id, :parent_reply_id, :author_id, :body
+  attr_accessor :subject_question_id, :parent_reply_id, :user_id, :body
   def initialize(options)
     @id = options['id']
     @subject_question_id = options['subject_question_id']
     @parent_reply_id = options['parent_reply_id']
-    @author_id = options['author_id']
+    @user_id = options['user_id']
     @body = options['body']
   end
 
@@ -93,8 +132,68 @@ class Reply
       WHERE
         id = ?
     SQL
+    Reply.new(data.first)
+  end
+
+  def self.find_by_user_id(id)
+    data = QuestionsDatabase.instance.execute(<<-SQL, id)
+      SELECT
+        *
+      FROM
+        replies
+      WHERE
+        user_id = ?
+    SQL
     data.map { |datum| Reply.new(datum) }
   end
+
+  def self.find_by_question_id(id)
+    data = QuestionsDatabase.instance.execute(<<-SQL, id)
+      SELECT
+        *
+      FROM
+        replies
+      WHERE
+        subject_question_id = ?
+    SQL
+    data.map { |datum| Reply.new(datum) }
+  end
+
+  def author
+    data = QuestionsDatabase.instance.execute(<<-SQL, @user_id)
+      SELECT
+        *
+      FROM
+        users
+      WHERE
+        id = ?
+    SQL
+    User.new(data.first)
+  end
+
+  def question
+    Question.find_by_id(@subject_question_id)
+  end
+
+  def parent_reply
+    raise 'No parent of top-level reply' if @parent_reply_id == nil
+    Reply.find_by_id(@parent_reply_id)
+  end
+
+  def child_replies
+    data = QuestionsDatabase.instance.execute(<<-SQL, @id)
+      SELECT
+        *
+      FROM
+        replies
+      WHERE
+        parent_reply_id = ?
+    SQL
+    raise "No reply children" if data.empty?
+    data.map { |datum| Reply.new(datum) }
+  end
+
+
 end
 
 class QuestionLike
@@ -123,7 +222,7 @@ end
 class QuestionFollow
   attr_reader :id
   attr_accessor :user_id, :question_id
-  
+
   def initialize(options)
     @id = options['id']
     @user_id = options['user_id']
