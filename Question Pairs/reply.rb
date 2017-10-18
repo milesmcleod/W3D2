@@ -3,8 +3,9 @@ require_relative 'user.rb'
 require_relative 'question.rb'
 require_relative 'questionlike.rb'
 require_relative 'questionfollow.rb'
+require_relative 'modelbase.rb'
 
-class Reply
+class Reply < ModelBase
   attr_reader :id
   attr_accessor :subject_question_id, :parent_reply_id, :user_id, :body
   def initialize(options={})
@@ -13,18 +14,6 @@ class Reply
     @parent_reply_id = options['parent_reply_id']
     @user_id = options['user_id']
     @body = options['body']
-  end
-
-  def self.find_by_id(id)
-    data = QuestionsDatabase.instance.execute(<<-SQL, id)
-      SELECT
-        *
-      FROM
-        replies
-      WHERE
-        id = ?
-    SQL
-    Reply.new(data.first)
   end
 
   def self.find_by_user_id(id)

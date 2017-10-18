@@ -3,8 +3,9 @@ require_relative 'user.rb'
 require_relative 'reply.rb'
 require_relative 'questionlike.rb'
 require_relative 'questionfollow.rb'
+require_relative 'modelbase.rb'
 
-class Question
+class Question < ModelBase
   attr_reader :id
   attr_accessor :title, :body, :author_id
 
@@ -13,18 +14,6 @@ class Question
     @title = options['title']
     @body = options['body']
     @author_id = options['author_id']
-  end
-
-  def self.find_by_id(id)
-    data = QuestionsDatabase.instance.execute(<<-SQL, id)
-      SELECT
-        *
-      FROM
-        questions
-      WHERE
-        id = ?
-    SQL
-    Question.new(data.first)
   end
 
   def self.find_by_author_id(id)
